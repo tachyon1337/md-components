@@ -1,0 +1,139 @@
+<md-range parse-attr definition>
+    <template>
+        <input type="range" id="[[md-id]]" min="[[min]]" max="[[max]]" name="[[md-name]]" value="[[value]]" data-bind="[[bind]]" [[required]] />
+        <div class="progress"></div>
+        <div class="thumb"></div>
+        <div class="value">
+            <flex-box class="column range-display">
+                <div class="range-value-container">
+                    <span class="range-value"></span>
+                </div>
+                <div class="range-value-border"></div>
+            </flex-box>
+        </div>
+    </template>
+</md-range>
+<script>
+    Elliptical(function(){
+        $.element('md-range',{
+
+            _initElement:function(){
+                this._data.set('mousedown',false);
+                this._data.set('max',this.options.max);
+                this._data.set('min',this.options.min);
+                this._data.set('diff',this.options.max-this.options.min);
+                var input=this.element.find('input');
+                var val=input.val();
+                this._updateProgress(val);
+
+            },
+
+            _events:function(){
+                this._event(this.element,'change','input',this._onChange.bind(this));
+                this._event(this.element,'mousedown touchstart','input',this._onStart.bind(this));
+                this._event(this.element,'mouseup touchend',this._onEnd.bind(this));
+                this._event(this.element,'mousemove touchmove',this._onMove.bind(this));
+                this._event(this.element,'mouseout touchleave',this._onExit.bind(this));
+            },
+
+            _calculateRatio:function(val){
+                var diff=this._data.get('diff');
+                return (val/diff);
+            },
+
+            _onChange:function(event){
+                var element=this.element;
+                var thumb = element.find('.thumb');
+                var input=element.find('input');
+                var val=input.val();
+                console.log(val);
+                thumb.find('.value').html(val);
+
+                var data={
+                    value:input.val(),
+                    id:input.attr('id'),
+                    name:input.attr('name')
+                };
+                element.trigger('md.range.change',data);
+            },
+
+            _onStart:function(event){
+                this._resetSemanticState();
+                var thumb = this.element.find('.thumb');
+                var input=this.element.find('input');
+                var val=input.val();
+                thumb.find('.value').html(val);
+                this._data.set('mousedown',true);
+                thumb.find('.value').html(val);
+                input.addClass('active');
+                //this._parseThumbTrack(event,thumb,input);
+                thumb.find('.value').html(val);
+            },
+
+            _onEnd:function(event){
+                this._data.set('mousedown',false);
+                $(this).removeClass('active');
+            },
+
+            _onMove:function(event){
+                var thumb=this.element.find('.thumb');
+                var input=this.element.find('input');
+                var val=input.val();
+                if (this._data.get('mousedown')) {
+                    this._updateProgress(val);
+                    //this._parseThumbTrack(event,thumb,input);
+                }
+            },
+
+            _onExit:function(event){
+                if (!this._data.get('mousedown')) {
+                    var thumb=this.element.find('.thumb');
+                    if (thumb.hasClass('active')) {
+                        this._transitions(thumb,{height:0,width:0,top:'10px',marginLeft:'-6px',opacity:0,duration:100});
+                    }
+                    thumb.removeClass('active');
+                }
+            },
+
+            _parseThumbTrack:function(event,thumb,input){
+                var left;
+                if (!thumb.hasClass('active')) {
+                    this._transitions(thumb,{ height: "30px", width: "30px", top: "0px", marginLeft: "-15px",opacity:1,duration:50});
+                }
+
+                if(event.pageX === undefined || event.pageX === null){//mobile
+                    left = event.originalEvent.touches[0].pageX - input.offset().left;
+                }
+                else{ // desktop
+                    left = event.pageX - input.offset().left;
+                }
+                var width = input.outerWidth();
+
+                if (left < 0) {
+                    left = 0;
+                }
+                else if (left > width) {
+                    left = width;
+                }
+                thumb.addClass('active').css('left', left);
+            },
+
+            _updateProgress:function(val){
+                var ratio=this._calculateRatio(val);
+                var obj=this._transformObj(ratio);
+                var progress=this.element.find('.progress');
+                var rangeValue=this.element.find('.range-value');
+                rangeValue.html(val);
+
+                progress.css(obj);
+            },
+
+            _transformObj:function(r){
+                return {
+                    '-webkit-transform': 'scaleX(' + r + ')',
+                    transform: 'scaleX(' + r + ')'
+                };
+            }
+        });
+    });
+</script>

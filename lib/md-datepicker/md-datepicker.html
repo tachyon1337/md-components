@@ -1,0 +1,273 @@
+<script src="core.js"></script>
+<script src="datepicker.js"></script>
+<md-datepicker parse-attr definition>
+    <template>
+        <div class="native">
+            <input type="text" class="[[class]]" placeholder="[[placeholder]]" data-id="[[md-id]]" data-type="date" value="[[value]]" touch-input name="[[md-name]]">
+        </div>
+        <div class="desktop">
+            <input type="text" class="[[class]]" data-type="date" placeholder="[[placeholder]]" data-id="[[md-id]]" value="[[value]]" desktop-input name="[[md-name]]" />
+            <div style="display:none">
+                <div data-id="[[md-id]]" class="md-datepicker-header">
+                    <div class="md-datepicker-day">
+                    </div>
+                    <div class="md-datepicker-date">
+                        <div class="md-datepicker-month">
+                        </div>
+                        <div class="md-datepicker-day-num">
+                        </div>
+                        <div class="md-datepicker-year">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+</md-datepicker>
+<script>
+    Elliptical(function () {
+
+        $.datepicker._material={};
+        $.datepicker._selectDateOverload = $.datepicker._selectDate;
+        $.datepicker._selectDate = function(id, dateStr) {
+            var target = $(id);
+            var inst = this._getInst(target[0]);
+            inst.inline = true;
+            $.datepicker._selectDateOverload(id, dateStr);
+            inst.inline = false;
+            this._updateDatepicker(inst);
+            var header=this._material[inst.id];
+            $(".ui-datepicker").prepend(header);
+        };
+
+        $.element('md-datepicker', {
+            _initElement: function () {
+                var id=(this.options.mdId===undefined) ? 'dp' + $.utils.string.random() : this.options.mdId;
+                this._data.set('id',id);
+                if(this._device.touch){
+                    this._initNativeComponent(id);
+                }else{
+                    this._initDesktopComponent(id);
+                }
+            },
+
+
+            _initDesktopComponent:function(id){
+                var self=this;
+                this.element.query('.desktop',function(element){
+                    element.show();
+                    self._desktopComponent(id);
+                });
+            },
+
+            _desktopComponent:function(id){
+                var context=this;
+                this._assignId(id);
+                this._assignHeaderId(id);
+                var selector='[data-id="' + id + '"]';
+                var headerHtml = $(selector + '.md-datepicker-header');
+
+                var changeMaterialHeader = function(inst, date) {
+                    var year   = date.format('YYYY');
+                    var month  = date.format('MMM');
+                    var dayNum = date.format('D');
+                    var isoDay = date.isoWeekday();
+
+                    var weekday = new Array(7);
+                    weekday[1] = "Monday";
+                    weekday[2] = "Tuesday";
+                    weekday[3] = "Wednesday";
+                    weekday[4] = "Thursday";
+                    weekday[5] = "Friday";
+                    weekday[6] = "Saturday";
+                    weekday[7]=  "Sunday";
+
+                    $(selector + ' .md-datepicker-day').text(weekday[isoDay]);
+                    $(selector + ' .md-datepicker-year').text(year);
+                    $(selector + ' .md-datepicker-month').text(month);
+                    $(selector + ' .md-datepicker-day-num').text(dayNum);
+                    if(inst !==undefined){
+                        $.datepicker._material[inst.id]=$(selector + '.md-datepicker-header');
+                    }
+                };
+
+                var onClose=function(){
+                    setTimeout(function(){
+                        headerHtml.hide();
+                    },300);
+                };
+
+                var onShow=function(ele,inst){
+                    headerHtml.show();
+                    context._onDesktopShow(ele,inst.id)
+                };
+
+                var onSelect=function(val){
+                    var data={
+                        id:context._data.get('id'),
+                        value:val,
+                        name:context.options.mdName,
+                        device:'desktop'
+                    };
+                    context._resetSemanticState();
+                    context.element.trigger('md.datepicker.select',data);
+                };
+
+
+                this.element.on('focus','[desktop-input]', function() {
+                    $('.ui-datepicker').prepend(headerHtml);
+                });
+
+                var opts={
+                    showButtonPanel: true,
+                    closeText: 'SET',
+                    dayNamesMin:['S','M','T','W','T','F','S'],
+                    onSelect: function(date, inst) {
+                        onSelect(date);
+                        changeMaterialHeader(inst,moment(date));
+                    },
+                    onClose:function(date,inst){
+                        onClose();
+                    },
+                    beforeShow: function(ele,inst){
+                        onShow(ele,inst);
+                    }
+                };
+                var min=this.options.min;
+                var max=this.options.max;
+                if(min!==undefined){
+                    opts.minDate=min;
+                }
+                if(max!==undefined){
+                    opts.minDate=max;
+                }
+                var dp=this.element.find("[desktop-input]");
+                dp.datepicker(opts);
+                this._data.set('dp',dp);
+                changeMaterialHeader(undefined, moment());
+            },
+
+
+            _assignId:function(id){
+                var input=this.element.find('[desktop-input]');
+                input.attr('id',id);
+            },
+
+            _assignHeaderId:function(id){
+                var input=this.element.find('.md-datepicker-header');
+                input.attr('data-id',id);
+            },
+
+            _onDesktopShow:function(ele,id){
+                var value=$(ele).val();
+                var data={
+                    id:id,
+                    value:value,
+                    name:this.options.mdName,
+                    device:'desktop'
+                };
+
+                this.element.trigger('md.datepicker.show',data);
+            },
+
+            _initNativeComponent:function(id){
+                this._assignNativeId(id);
+                this.element.find('.native').show();
+                this._nativeEvents();
+            },
+
+            _nativeEvents:function(){
+                this._event(this.element,'touchstart','[data-type=date]',this._onNativeTouch.bind(this));
+                this._event(this.element,'change','[touch-input]',this._onNativeChange.bind(this));
+            },
+
+            _onNativeTouch:function(event){
+                var target=$(event.currentTarget);
+                this._setNativeFocus(target);
+            },
+
+            _setNativeFocus:function(target){
+                target.attr('type','date');
+                target[0].focus();
+                this._onNativeShow(event);
+            },
+
+            _assignNativeId:function(id){
+                var input=this.element.find('[touch-input]');
+                input.attr('id',id);
+                var min=this.options.min;
+                var max=this.options.max;
+                if(min!==undefined){
+                    input.attr('min',min);
+                }
+                if(max!==undefined){
+                    input.attr('max',max);
+                }
+            },
+
+            _onNativeShow:function(event){
+                var value=$(event.currentTarget).val();
+                var data={
+                    id:this._data.get('id'),
+                    value:value,
+                    name:this.options.mdName,
+                    device:'touch'
+                };
+
+                this.element.trigger('md.datepicker.show',data);
+            },
+
+            _onNativeChange:function(event){
+                var data={
+                    id:this._data.get('id'),
+                    value:$(event.currentTarget).val(),
+                    name:this.options.mdName,
+                    device:'touch'
+                };
+                this._resetSemanticState();
+                this.element.trigger('md.datepicker.select',data);
+            },
+
+            setDate:function(value){
+                if(this._device.touch){
+                    var input=this.element.find('[touch-input]');
+                    input.val(value);
+                }else{
+                    var dp=this._data.get('dp');
+                    dp.datepicker('setDate',value);
+                }
+            },
+
+            getDate:function(){
+                if(this._device.touch){
+                    var input=this.element.find('[touch-input]');
+                    return input.val();
+                }else{
+                    var dp=this._data.get('dp');
+                    return dp.datepicker('getDate');
+                }
+            },
+
+            dialog:function(){
+                if(this._device.touch){
+                    var input=this.element.find('[touch-input]');
+                    this._setNativeFocus(input);
+                }else{
+                    var dp=this._data.get('dp');
+                    dp.datepicker('dialog');
+                }
+            },
+
+            clear:function(){
+                if(this._device.touch){
+                    var input=this.element.find('[touch-input]');
+                    input.val('');
+                }else{
+                    var dp=this._data.get('dp');
+                    dp.datepicker('setDate',null);
+                }
+            }
+
+        });
+    });
+</script>

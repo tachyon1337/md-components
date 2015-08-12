@@ -1,0 +1,115 @@
+<style>
+    @-webkit-keyframes md-scale-dropdown {
+        0% {
+            -webkit-transform: scale(.1);
+            opacity:0;
+        }
+        100% {
+            -webkit-transform: scale(1);
+            opacity:1;
+        }
+    }
+    @keyframes md-scale-dropdown {
+        0% {
+            transform: scale(.1);
+            opacity:0;
+        }
+        100% {
+            transform: scale(1);
+            opacity:1;
+        }
+    }
+    @-webkit-keyframes md-hide-dropdown {
+        0% {
+            transform: scale(1);
+            opacity:1;
+        }
+        99%{
+            transform: scale(.1);
+            opacity:0;
+        }
+        100% {
+            display:none;
+        }
+    }
+    @keyframes md-hide-dropdown {
+        0% {
+            transform: scale(1);
+            opacity:1;
+        }
+        100%{
+            transform: scale(.1);
+            opacity:0;
+        }
+
+    }
+    .md-scale-dropdown{
+        display:-webkit-flex;
+        -webkit-flex-direction: column;
+        display:flex;
+        flex-direction:column;
+        -webkit-animation-name:md-scale-dropdown;
+        -webkit-animation-duration:200ms;
+        animation-name: md-scale-dropdown;
+        animation-duration: 200ms;
+    }
+    .md-hide-dropdown{
+        -webkit-animation-name:md-hide-dropdown;
+        animation-name: md-hide-dropdown;
+        -webkit-animation-duration:200ms;
+        animation-duration: 200ms;
+    }
+</style>
+<md-dropdown definition>
+    <template>
+        <content></content>
+    </template>
+</md-dropdown>
+<script>
+    Elliptical(function () {
+        $.element('md-dropdown', {
+            _initElement: function () {
+                if(this.element.attr('tabIndex')===undefined){
+                    this.element.attr('tabIndex',1);
+                }
+            },
+
+            _events:function(){
+                this._event(this.element,'blur',this._hide.bind(this));
+
+            },
+
+            _show:function(){
+                var element=this.element;
+                element.addClass('md-scale-dropdown')
+                        .timeout(200,function(){
+                            element[0].focus();
+                        });
+            },
+
+            _hide:function(){
+                var self=this;
+                this.element.addClass('md-hide-dropdown');
+                this.element.removeAnimation(200,function(){
+                    self.element.removeClass('md-scale-dropdown')
+                                .removeClass('md-hide-dropdown');
+                });
+            },
+
+            show:function(){
+                this._show();
+            },
+
+            hide:function(){
+                this._hide();
+            }
+        });
+
+        $(document).on('touchclick','[dropdown]',function(event){
+            var target=$(event.currentTarget);
+            var dropdown=target.find('md-dropdown');
+            dropdown.mdDropdown('show');
+        });
+
+    });
+</script>

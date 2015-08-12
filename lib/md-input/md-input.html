@@ -1,0 +1,60 @@
+<md-input parse-attr definition>
+    <template>
+        <span class="icon-[[icon]] [[prefix]]"></span>
+        <input type="[[type]]" placeholder="[[placeholder]]" id="[[md-id]]" name="[[md-name]]" data-bind="[[bind]]"  value="[[value]]">
+        <label for="[[md-id]]" class="[[active]]">[[label]]</label>
+    </template>
+</md-input>
+<script>
+    Elliptical(function(){
+        $.element('md-input',{
+
+            _initElement:function(){
+               this._setRequired();
+            },
+
+            _setRequired:function(){
+                if (this.element[0].hasAttribute('required')){
+                    var input=this.element.find('input');
+                    input.attr('required','');
+                }
+            },
+
+            _events:function(){
+                var self=this;
+                this._event(this.element,'focus','input',function(event){
+                    $(this).siblings('label, i').addClass('active');
+                    self.element.find('span').addClass('active');
+                });
+
+                this._event(this.element,'blur','input',function(event){
+                    var $input = $(this);
+                    if ($input.val().length === 0 && $input.attr('placeholder') === '') {
+                        $input.siblings('label, i').removeClass('active');
+                    }
+                    self.element.find('span').removeClass('active');
+                });
+
+                this._event(this.element,'change','input',function(event){
+                    var $input = $(this);
+                    if ($input.val().length === 0 && $input.attr('placeholder') !== '') {
+                        $input.siblings('label, i').addClass('active');
+                        self.element.find('span').addClass('active');
+                    }
+                    self._resetSemanticState();
+                    self._onChange(event);
+                });
+            },
+
+            _onChange:function(event){
+                var element=$(event.currentTarget);
+                var data={
+                    value:element.val(),
+                    id:element.attr('id'),
+                    name:element.attr('name')
+                };
+                this.element.trigger('md.input.change',data);
+            }
+        });
+    });
+</script>

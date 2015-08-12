@@ -1,0 +1,20 @@
+<md-fab parse-attr definition>
+    <template>
+        <span class="icon-[[icon]]"></span>
+    </template>
+</md-fab>
+<script>
+    Elliptical(function () {
+        $.element('md-fab', {
+            _initElement: function () {
+                if(this.element.attr('no-ripple')===undefined){
+                    this.element.attr('ripple','');
+                }
+                if(this.options.rippleColor===undefined){
+                    this.element.attr('ripple-color','white');
+                }
+                this.element.attr('ripple-radius','50%');
+            }
+        });
+    });
+</script>

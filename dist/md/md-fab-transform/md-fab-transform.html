@@ -1,0 +1,126 @@
+<style>
+    @-webkit-keyframes md-reset-fab {
+        0% {
+            rotate(-90);
+            scale(1);
+            display:-webkit-flex;
+            opacity:0;
+        }
+        100% {
+            opacity:1;
+        }
+    }
+    @keyframes md-reset-fab {
+        0% {
+            rotate(-90);
+            scale(1);
+            display:flex;
+            opacity:0;
+        }
+        100%{
+            opacity:1;
+        }
+    }
+
+    .md-reset-fab{
+        -webkit-animation-name:md-reset-fab;
+        -webkit-animation-duration:200ms;
+        animation-name: md-reset-fab;
+        animation-duration: 200ms;
+    }
+</style>
+<md-fab-transform parse-attr definition>
+    <template>
+        <md-fab icon="[[icon]]" no-ripple></md-fab>
+        <content></content>
+    </template>
+</md-fab-transform>
+<script>
+    Elliptical(function () {
+        $.component('md-fab-transform', {
+            _initComponent: function () {
+                this._setService();
+            },
+
+            _setService:function(){
+                var self=this;
+                var element=this.element;
+                this.serviceAsync(function(service){
+                    self._data.set('service',service);
+                    service.listen(element);
+                });
+            },
+
+            _events: function () {
+                var click = this._data.click;
+                var hover = this._data.hover;
+                this._event(this.element, click, 'md-fab', this._onClick.bind(this));
+                this._event(this.element, hover, 'md-fab', this._onHover.bind(this));
+                this._event($(window),'md.fab.transform.reset', this._reset.bind(this));
+            },
+
+            _onHover: function (event) {
+                var a = this.element.find('md-fab');
+                if (a.hasClass('hover')) {
+                    a.removeClass('hover');
+                    this._hoverOut(a[0]);
+                } else {
+                    a.addClass('hover');
+                    this._hoverIn(a[0]);
+                }
+            },
+
+            _hoverIn: function (a) {
+                move(a)
+                        .scale(1.2)
+                        .rotate(90)
+                        .duration('.2s')
+                        .end();
+            },
+
+            _hoverOut: function (a) {
+                move(a)
+                        .scale(1)
+                        .rotate(-90)
+                        .duration('.2s')
+                        .end(function () {
+                            a.setAttribute('style', '');
+                        });
+            },
+
+            _onClick: function (event) {
+                var service=this._data.get('service');
+                var element=this.element;
+                var a = element.find('md-fab');
+                move(a[0])
+                        .scale(1)
+                        .set('opacity', 0)
+                        .duration('.2s')
+                        .ease('snap')
+                        .end(function () {
+                            a.addClass('hide');
+                            a.removeClass('md-reset-fab');
+                            service.show(element);
+                        });
+            },
+
+            _reset:function(){
+                var service=this._data.get('service');
+                var element=this.element;
+                var a = element.find('md-fab');
+                a.addClass('md-reset-fab');
+                setTimeout(function(){
+                    a.removeClass('hide')
+                            .removeClass('md-reset-fab')
+                            .removeClass('hover')
+                            .attr('style','');
+                    service.hide(element);
+                },250);
+            },
+
+            reset:function(){
+                setTimeout(this._reset.bind(this),100);
+            }
+        });
+    });
+</script>

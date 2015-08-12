@@ -1,0 +1,219 @@
+
+<style>
+    @-webkit-keyframes md-scale-dialog {
+        0% {
+            -webkit-transform: scale(.1);
+            opacity:0;
+        }
+        100% {
+            -webkit-transform: scale(1);
+            opacity:1;
+        }
+    }
+    @keyframes md-scale-dialog {
+        0% {
+            transform: scale(.1);
+            opacity:0;
+        }
+        100% {
+            transform: scale(1);
+            opacity:1;
+        }
+    }
+    @-webkit-keyframes md-hide-dialog {
+        0% {
+            opacity:1;
+        }
+        99%{
+            opacity:0;
+        }
+        100% {
+            display:none;
+        }
+    }
+    @keyframes md-hide-dialog {
+        0% {
+            opacity:1;
+        }
+        99%{
+            opacity:0;
+        }
+        100% {
+            display:none;
+        }
+    }
+    @-webkit-keyframes md-scale-hide-dialog {
+        0% {
+            -webkit-transform: scale(1);
+            opacity:1;
+        }
+        99%{
+            -webkit-transform: scale(.1);
+            opacity:0;
+        }
+        100% {
+            display:none;
+        }
+    }
+    @keyframes md-scale-hide-dialog {
+        0% {
+            transform: scale(1);
+            opacity:1;
+        }
+        99%{
+            transform: scale(.1);
+            opacity:0;
+        }
+        100% {
+            display:none;
+        }
+    }
+    .md-scale-dialog{
+        display:block !important;
+        -webkit-animation-name:md-scale-dialog;
+        -webkit-animation-duration:300ms;
+        animation-name: md-scale-dialog;
+        animation-duration: 300ms;
+    }
+    .md-hide-dialog{
+        -webkit-animation-name:md-hide-dialog;
+        animation-name: md-hide-dialog;
+        -webkit-animation-duration:500ms;
+        animation-duration: 500ms;
+    }
+    .md-scale-hide-dialog{
+        -webkit-animation-name:md-scale-hide-dialog;
+        animation-name: md-scale-hide-dialog;
+        -webkit-animation-duration:300ms;
+        animation-duration: 300ms;
+    }
+</style>
+<md-dialog parse-attr definition>
+    <template>
+        <div class="header">
+            <span class="icon-close" close></span>
+            <h6>[[header]]</h6>
+            <span dialog-action>[[action]]</span>
+        </div>
+        <div class="content">
+            <content></content>
+        </div>
+    </template>
+</md-dialog>
+<script>
+    Elliptical(function () {
+        $.element('md-dialog', {
+            options:{
+                opacity:.3,
+                modalZIndex:3,
+                hideDialog:'hide'
+            },
+
+            _initElement: function () {
+                this._data.set('open',false);
+                this._data.set('action',false);
+                if(this.options.hideDialog==='hide'){
+                    this._data.set('hide','md-hide-dialog');
+                }else{
+                    this._data.set('hide','md-scale-hide-dialog');
+                }
+                this._setAction();
+            },
+
+            _events:function(){
+                var click=this._data.click;
+                this._event(this.element,click,'[close]',this._onClose.bind(this));
+                this._event(this.element,click,'[dialog-action]',this._onAction.bind(this));
+            },
+
+            _onClose:function(){
+                $(window).trigger('md.dialog.hiding',{event:'close',dialog:this.element[0]});
+                this._hide('close');
+            },
+
+            _onAction:function(){
+                $(window).trigger('md.dialog.hiding',{event:'dialog-action',dialog:this.element[0]});
+                this._hide('action');
+            },
+
+            _show:function(event){
+                this._data.set('open',true);
+                var node=this.element[0];
+                this._modal();
+                if(this.options.zIndex!==undefined){
+                    this.element.css('z-index',this.options.zIndex);
+                }
+
+                $(window).trigger('md.dialog.showing',{event:event,dialog:node});
+                this.element.addClass('md-scale-dialog');
+                setTimeout(function(){
+                    $(window).trigger('md.dialog.show',{event:event,dialog:node});
+                },300);
+            },
+
+            _hide:function(event){
+                var hideCss=this._data.get('hide');
+                var self=this;
+                this._data.set('open',false);
+                var node=this.element[0];
+                if(this.options.hideAnimation !==undefined && this.options.hideAnimation){
+                    $(window).trigger('md.dialog.' + event,{dialog:node});
+                }else{
+                    this._hideModal();
+                    this.element.addClass(hideCss);
+                    this.element.removeAnimation(200,function(){
+                        self.element.removeClass('md-scale-dialog')
+                                .removeClass(hideCss);
+                        $(window).trigger('md.dialog.' + event,{dialog:node});
+                    });
+                }
+            },
+
+            _modal:function(){
+                var opts={};
+                if(this.options.modal && this.options.modal !==undefined){
+                    var element=this._modalSelector();
+                    opts.zIndex=this.options.modalZIndex;
+                    opts.opacity=this.options.opacity;
+                    this._setModal(element,opts);
+                }
+            },
+
+            _hideModal:function(){
+                if(this.options.modal && this.options.modal !==undefined){
+                    this._removeModal();
+                }
+            },
+
+            _modalSelector:function(){
+                var selector=this.options.modalSelector;
+                return (selector===undefined) ? $('body') : $(selector);
+
+            },
+
+            _setAction:function(){
+                var action=this.options.action;
+                if(action !==undefined){
+                    this.element.find('[dialog-action]').text(action);
+                }
+
+            },
+
+            show:function(){
+                if(!this._data.get('open')){
+                    this._show('open');
+                }
+            },
+
+            hide:function(){
+                if(this._data.get('open')){
+                    this._hide('close');
+                }
+            }
+
+
+        });
+
+
+    });
+</script>

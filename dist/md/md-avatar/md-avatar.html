@@ -1,0 +1,21 @@
+<md-avatar parse-attr definition>
+    <template>
+        <img class="avatar [[md-class]]" src="[[src]]">
+        <content></content>
+    </template>
+</md-avatar>
+<script>
+    Elliptical(function () {
+        $.element('md-avatar', {
+
+            _initElement: function () {
+                var defaultUrl=this.options.defaultUrl;
+                var img=this.element.find('.avatar');
+                var src=img.attr('src');
+                if(src===''){
+                    img.attr('src',defaultUrl);
+                }
+            }
+        });
+    });
+</script>

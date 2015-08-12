@@ -1,0 +1,45 @@
+<md-radio parse-attr definition>
+    <template>
+        <input type="radio" id="[[md-id]]" name="[[md-name]]" data-bind="[[bind]]" class="[[concentric]]" [[required]]>
+        <label for="[[md-id]]">[[label]]</label>
+    </template>
+</md-radio>
+<script>
+    Elliptical(function(){
+        $.element('md-radio',{
+            _initElement:function(){
+                var checked=this.element.attr('checked');
+                if(checked){
+                    var input=this.element.find('input');
+                    input.prop('checked',true);
+                }
+
+                var self=this;
+                setTimeout(function(){
+                    self.element.css({'visibility':'visible'});
+                },150);
+
+            },
+
+            _events:function(){
+                var self=this;
+                this._event(this.element,'change','input',function(event){
+                    self._resetSemanticState();
+                    self._onChange(event);
+                });
+            },
+
+            _onChange:function(event){
+                var element=$(event.currentTarget);
+                var data={
+                    value:element.val(),
+                    checked:element.is(':checked'),
+                    id:element.attr('id'),
+                    name:element.attr('name')
+                };
+                this.element.trigger('md.radio.change',data);
+            }
+
+        });
+    });
+</script>

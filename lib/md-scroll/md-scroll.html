@@ -1,0 +1,35 @@
+<script src="ftscroller.js"></script>
+<script>
+    Elliptical(function(){
+        $.element('md-scroll',{
+            options:{
+                proxyUpgrade:true
+            },
+
+            _initElement:function(){
+                var self=this;
+                setTimeout(function(){
+                    self._initScroll();
+                },500);
+            },
+
+            _initScroll:function(){
+                var selector=(this.options.selector) ? this.options.selector : '[md-scroll]';
+                var container = $(document).find(selector)[0];
+                if(container){
+                    var scroller = new FTScroller(container, {
+                        scrollbars: false,
+                        scrollingX: false
+                    });
+                    this._data.set('scroller',scroller);
+                }
+            },
+
+            _onDestroy:function(){
+                var scroller=this._data.get('scroller');
+                scroller.destroy();
+            }
+        });
+    });
+
+</script>

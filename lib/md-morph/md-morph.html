@@ -1,0 +1,41 @@
+<style>
+    md-morph{
+        position:relative;
+    }
+    md-morph [toggle]{
+        display:none;
+        position:absolute;
+        z-index:2;
+    }
+    md-morph [show]{
+        position:absolute;
+        z-index:1;
+    }
+</style>
+<md-morph definition>
+    <template>
+        <content></content>
+    </template>
+</md-morph>
+<script>
+    Elliptical(function () {
+        $.component('md-morph', {
+            options:{
+                scopeBind:false
+            },
+
+            _initComponent: function () {
+                this._initService();
+            },
+
+            _initService:function(){
+                var showElement=this.element.find('[show]');
+                var toggleElement=this.element.find('[toggle]');
+                this.serviceAsync(function(Service){
+                    var service=new Service();
+                    service.listen(showElement,toggleElement);
+                });
+            }
+        });
+    });
+</script>

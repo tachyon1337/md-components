@@ -1,0 +1,30 @@
+<script>
+    Elliptical(function () {
+        $.element('md-preloader', {
+            options:{
+                proxyUpgrade:true
+            },
+
+            _initElement: function () {
+                if(this.element.attr('disabled')===undefined){
+                    this._initLoader();
+                }
+            },
+
+            _initLoader:function(){
+                var self=this;
+                var template=$('<div class="preloader"><div class="circle1"></div><div class="circle2"></div></div>');
+                this.element.append(template);
+                this.element.addClass('animate');
+                $('body')[0].removeAttribute('preload');
+                setTimeout(function(){
+                    template.remove();
+                    self._transitions(self.element,{opacity:0},function(){
+                        self.element.removeClass('animate');
+                    });
+                },4000);
+
+            }
+        });
+    });
+</script>

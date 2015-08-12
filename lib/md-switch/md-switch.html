@@ -1,0 +1,47 @@
+<md-switch parse-attr definition>
+    <template>
+        <label>
+            [[off]]
+            <input type="checkbox" id="[[md-id]]" name="[[md-name]]" [[disabled]] data-bind="[[bind]]" [[required]] [[checked]]>
+            <span class="lever"></span>
+            [[on]]
+        </label>
+    </template>
+</md-switch>
+<script>
+    Elliptical(function(){
+        $.element('md-switch',{
+
+            _initElement:function(){
+
+            },
+
+            _events:function(){
+                var self=this;
+                this._event(this.element,'swiperight',function(event){
+                    self.element.find('input').prop( "checked", true );
+                });
+
+                this._event(this.element,'swipeleft',function(event){
+                    self.element.find('input').prop( "checked", false );
+                });
+
+                this._event(this.element,'change','input',function(event){
+                    self._resetSemanticState();
+                    self._onChange(event);
+                });
+            },
+
+            _onChange:function(event){
+                var element=$(event.currentTarget);
+                var data={
+                    value:element.val(),
+                    checked:element.is(':checked'),
+                    id:element.attr('id'),
+                    name:element.attr('name')
+                };
+                this.element.trigger('md.switch.change',data);
+            }
+        });
+    });
+</script>

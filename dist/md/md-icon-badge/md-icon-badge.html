@@ -1,0 +1,15 @@
+<link rel="import" href="../md-badge/md-badge.html" property="elliptical">
+<md-icon-badge parse-attr definition>
+    <template>
+        <md-badge value="[[value]]" data-upgraded="true"></md-badge>
+        <span class="icon-[[icon]]"></span>
+        <content></content>
+    </template>
+</md-icon-badge>
+<script>
+    Elliptical(function () {
+        $.element('md-icon-badge', {
+
+        });
+    });
+</script>

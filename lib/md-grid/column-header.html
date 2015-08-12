@@ -1,0 +1,30 @@
+<style>
+    column-header{
+        display:block;
+    }
+
+    column-header[sort=true]{
+        cursor:pointer;
+    }
+    colun-header[empty] > *{
+        display:none;
+    }
+</style>
+<column-header parse-attr definition>
+    <template>
+        <span class="label"><content></content></span>
+        <span class="icon-sort hide" sort="[[sort]]"></span>
+        <span class="icon-keyboard-arrow-up hide" arrow asc></span>
+        <span class="icon-keyboard-arrow-down hide" arrow desc></span>
+    </template>
+</column-header>
+<script>
+    Elliptical(function () {
+        $.element('column-header', {
+            _initElement: function () {
+
+            }
+
+        });
+    });
+</script>

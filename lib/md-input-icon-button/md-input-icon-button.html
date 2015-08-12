@@ -1,0 +1,50 @@
+<md-input-icon-button parse-attr definition>
+    <template>
+        <input type="text" placeholder="[[placeholder]]" id="[[md-id]]" name="[[md-name]]" data-bind="[[bind]]" [[required]] value="[[value]]">
+        <label for="[[md-id]]" class="[[active]]">[[label]]</label>
+        <button><span class="icon-[[icon]]"></span></button>
+    </template>
+</md-input-icon-button>
+<script>
+    Elliptical(function(){
+        $.element('md-input-icon-button',{
+
+            _initElement:function(){
+
+            },
+
+            _events:function(){
+                var self=this;
+                this._event(this.element,'focus','input',function(event){
+                    $(this).siblings('label, i').addClass('active');
+                });
+
+                this._event(this.element,'blur','input',function(event){
+                    var $input = $(this);
+                    if ($input.val().length === 0 && $input.attr('placeholder') === '') {
+                        $input.siblings('label, i').removeClass('active');
+                    }
+                });
+
+                this._event(this.element,'change','input',function(event){
+                    var $input = $(this);
+                    if ($input.val().length === 0 && $input.attr('placeholder') !== '') {
+                        $input.siblings('label, i').addClass('active');
+                    }
+                    self._resetSemanticState();
+                    self._onChange(event);
+                });
+            },
+
+            _onChange:function(event){
+                var element=$(event.currentTarget);
+                var data={
+                    value:element.val(),
+                    id:element.attr('id'),
+                    name:element.attr('name')
+                };
+                this.element.trigger('md.input-icon-button.change',data);
+            }
+        });
+    });
+</script>

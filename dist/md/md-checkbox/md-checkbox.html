@@ -1,0 +1,47 @@
+<md-checkbox parse-attr definition>
+    <template>
+        <input type="checkbox" id="[[md-id]]" name="[[md-name]]" data-bind="[[bind]]" class="[[filled]]" [[required]]>
+        <label for="[[md-id]]">[[label]]</label>
+    </template>
+</md-checkbox>
+<script>
+    Elliptical(function(){
+        $.element('md-checkbox',{
+            _initElement:function(){
+                var checked=this.element.attr('checked');
+                if(checked){
+                    var input=this.element.find('input');
+                    input.prop('checked',true);
+                }
+
+                var self=this;
+                setTimeout(function(){
+                    self.element.css({'visibility':'visible'});
+                },150);
+
+            },
+
+            _events:function(){
+                var self=this;
+                this._event(this.element,'change','input',function(event){
+                    self._resetSemanticState();
+                    self._onChange(event);
+                });
+            },
+
+            _onChange:function(event){
+                var element=$(event.currentTarget);
+                var checked=element.is(':checked');
+                var data={
+                    value:element.val(),
+                    checked:checked,
+                    id:element.attr('id'),
+                    name:element.attr('name')
+                };
+                this.element.trigger('md.checkbox.change',data);
+                (checked) ? this.element.attr('checked','') : this.element.removeAttr('checked');
+            }
+
+        });
+    });
+</script>

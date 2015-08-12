@@ -1,0 +1,459 @@
+<md-menu definition>
+    <template>
+        <content></content>
+    </template>
+</md-menu>
+
+<script>
+    Elliptical(function () {
+        var _itemSelector = 'menu-item';
+        var _expandSelector = '.expand';
+        var _expandClass = 'expand';
+        var _toggleSelector = '.dropdown';
+        var _header = 'header';
+        var _section = 'menu-dropdown';
+
+        $.element.registerElement('menu-dropdown');
+
+        $.element('md-menu', {
+            options: {
+                animate: true,
+                duration: 250,
+                easing: 'linear',
+                rippleColor:'black',
+                activeRippleColor:'white',
+                closeDrawer:false
+            },
+
+            /*==========================================
+             PRIVATE
+             *===========================================*/
+
+            /**
+             * init method
+             * @private
+             */
+            _initElement: function () {
+                this._data.collapsible = null;
+                if (this.options.animate === 'false') {
+                    this.options.animate = false;
+                }
+                this._setCollapseItems();
+                this._collapseEvents();
+                this._getDrawer();
+            },
+
+            /**
+             * events
+             * @private
+             */
+            _events: function () {
+                var click=this._data.click;
+                this._event($(window), 'menu.toggle.disable', this._onDisableToggle.bind(this));
+                this._event(this.element,click,'menu-dropdown>menu-item>a',this._onItemClick.bind(this));
+                this._event(this.element,click,'header:not(".dropdown")',this._onHeaderClick.bind(this));
+                if(this._mq.touch && this.options.closeDrawer){
+                    this._event(this.element,click,'a',this._onDeviceClick.bind(this));
+                }
+            },
+
+            _getDrawer:function(){
+                var drawer=$('paper-drawer-panel');
+                if(drawer[0]){
+                    this._data.set('drawer',drawer);
+                }
+            },
+
+            /**
+             * show item
+             * @param {Object} element
+             * @private
+             */
+            _show: function (element) {
+                if (typeof element === 'number') {
+                    element = this._getCollapsible(element);
+                }
+                this._data.set('collapsible',element);
+                var isTouch = this._support.device.touch;
+                var animated = this.options.animate;
+                //this._showCollapseItemToggle(element);
+                (animated && !isTouch) ? this._expand() : this._open();
+            },
+
+            /**
+             * hide item
+             * @param {Object} element
+             * @private
+             */
+            _hide: function (element) {
+                if (typeof element === 'number') {
+                    element = this._getCollapsible(element);
+                }
+                this._data.set('collapsible',element);
+                var isTouch = this._support.device.touch;
+                var animated = this.options.animate;
+                (animated && !isTouch) ? this._collapse() : this._close();
+            },
+
+            /**
+             * toggle item
+             * @param {Object} element
+             * @private
+             */
+            _toggle: function (element) {
+                if (typeof element === 'number') {
+                    element = this._getCollapsible(element);
+                }
+                this._onCollapse(element);
+            },
+
+            /**
+             * animate expand item
+             * @private
+             */
+            _expand: function () {
+                var element = this.element;
+                var collapsible = this._data.get('collapsible');
+                var eventData = this._eventData();
+                this._onEventTrigger('showing', eventData);
+
+                var flyout = collapsible.children().not(_header);
+                var duration = this.options.duration;
+                var easing = this.options.easing;
+                var out = element.find(_expandSelector + ' >*')
+                        .not(_header);
+
+                if (out.length > 0) {
+                    out.each(function (i) {
+                        var thisHeight = $(this)[0].offsetHeight;
+                        $(this).css({ height: thisHeight + 'px' });
+                    });
+                    //collapse
+                    var opts = {};
+                    opts.duration = duration;
+                    opts.height = '0px';
+                    opts.easing = easing;
+                    this._transitions(out, opts, function () {
+                        element.children(_itemSelector)
+                                .not(collapsible)
+                                .removeClass(_expandClass);
+                    });
+                }
+                flyout.css({ height: 'auto' });
+                collapsible.addClass(_expandClass); //toggle the state of our element to be expanded
+                var height = flyout[0].offsetHeight;
+                flyout.hide().css({ height: '0px' }).show();
+
+                //expand
+                var self = this;
+                var options = {};
+                options.duration = duration;
+                options.height = height + 'px';
+                options.easing = easing;
+                this._transitions(flyout, options, function () {
+                    //raise show event
+                    self._onEventTrigger('show', eventData);
+                });
+            },
+
+            /**
+             * animate collapse item
+             * @private
+             */
+            _collapse: function () {
+                var collapsible = this._data.get('collapsible');
+
+                //raise the onHiding event
+                var eventData = this._eventData();
+                this._onEventTrigger('hiding', eventData);
+
+                var flyout = collapsible.children().not(_header);
+                var height = flyout[0].offsetHeight;
+
+                //assign the css height, necessary to avoid animating from 'auto' height to zero, which you generally cannot do
+                flyout.css({ height: height + 'px' });
+
+                //collapse: animate to zero height
+                var duration = this.options.duration;
+                var easing = this.options.easing;
+                var self = this;
+                var options = {};
+                options.duration = duration;
+                options.height = '0px';
+                options.easing = easing;
+                this._transitions(flyout, options, function () {
+                    collapsible.removeClass(_expandClass);
+                    self._onEventTrigger('hide', eventData);
+                });
+            },
+
+            /**
+             * show item
+             * @private
+             */
+            _open: function () {
+                var element = this.element;
+                var collapsible = this._data.get('collapsible');
+                var eventData = this._eventData();
+
+                element.children(_itemSelector)
+                        .not(collapsible)
+                        .removeClass(_expandClass);
+
+                var self = this;
+                collapsible.find(_section)
+                        .removeAttr('style');
+                collapsible.addClass(_expandClass); //toggle the state of the shown element
+                //raise show event
+                self._onEventTrigger('show', eventData);
+
+            },
+
+            /**
+             * hide item
+             * @private
+             */
+            _close: function () {
+                var collapsible = this._data.get('collapsible');
+
+                //raise hiding event
+                var eventData = this._eventData();
+                this._onEventTrigger('hiding', eventData);
+
+                collapsible.removeClass(_expandClass);
+                collapsible.find(_section)
+                        .removeAttr('style');
+                //raise hide event
+                this._onEventTrigger('hide', eventData);
+            },
+
+
+            /**
+             *
+             * @param {Object} element
+             * @param {Object} target
+             * @param {Object} event
+             * @private
+             */
+            _onCollapse: function (element,target,event) {
+                this._data.set('collapsible',element);
+                //(element.hasClass(_expandClass)) ? this._hide(element) : this._show(element);
+                if(element.hasClass(_expandClass)){
+                    this._hide(element);
+                }else{
+                    this._ripple(target,'expand',300,event);
+                    this._show(element);
+                }
+            },
+
+            /**
+             * gets collapse item from index
+             * @param {number} index
+             * @returns {Object}
+             * @private
+             */
+            _getCollapsible: function (index) {
+                var element = this.element;
+                var items = element.find(_itemSelector);
+                var collapsible = items[index];
+                var $collapsible=$(collapsible);
+                this._data.set('collapsible',$collapsible);
+                return $collapsible;
+            },
+
+            /**
+             * gets collapse item from toggle element target
+             * @param {Object} target
+             * @returns {Object}
+             * @private
+             */
+            _getCollapsibleFromTarget: function (target) {
+                return target.parents(_itemSelector);
+            },
+
+            /**
+             * gets array of collapse element items
+             * @private
+             */
+            _setCollapseItems: function () {
+                var collapseItems=this.element.find(_itemSelector);
+                this._data.set('collapseItems',collapseItems);
+            },
+
+
+            /**
+             * builds event data object
+             * @returns {Object}
+             * @private
+             */
+            _eventData: function () {
+                var data = {};
+                data.target = this._data.get('collapsible');
+                data.index = this._data.get('collapseItems').index(data.target);
+                return data;
+            },
+
+            /**
+             * component events
+             * @private
+             */
+            _collapseEvents: function () {
+                var self = this;
+                var click = this._press();
+                var element = this.element;
+                this._event(element, click, _toggleSelector, function (event) {
+                    var target=$(event.currentTarget);
+                    var collapsible = self._getCollapsibleFromTarget(target);
+                    self._onCollapse(collapsible,target,event);
+                });
+            },
+
+            /**
+             * returns the array of menu headers/toggles
+             * @returns {Array}
+             * @private
+             */
+            _getToggles: function () {
+                return this.element.find(_toggleSelector);
+            },
+
+            _disableTogglesByRange: function (toggles, index) {
+                $.each(toggles, function (i, toggle) {
+                    if (i < index) {
+                        $(toggle).css({ visibility: 'hidden' });
+                    }
+                });
+            },
+
+            _onDisableToggle: function (event, data) {
+                var self = this;
+                var type = data.type;
+                var index = data.index;
+                var toggles = this._getToggles();
+                if (type === 'range') {
+                    this._disableTogglesByRange(toggles, index);
+                } else {
+                    var toggle = toggles[index];
+                    $(toggle).css({ visibility: 'hidden' });
+                }
+            },
+
+
+            _onItemClick:function(event){
+                var target=$(event.currentTarget);
+                this._dispatchItemClick(target,undefined);
+            },
+
+            _dispatchItemClick:function(target,event){
+                var header=target.parents('.expand').find('header');
+                var applyRipple=!(header.hasClass('active'));
+                var active=this.element.find('.active');
+
+                active.detachClass('active');
+                target.addClass('active');
+                header.addClass('active');
+                if(applyRipple){
+                    this._ripple(header,'active',300,event);
+                }
+            },
+
+
+            _onHeaderClick:function(event){
+                var target=$(event.currentTarget);
+                this._dispatchHeaderClick(target,event);
+            },
+
+            _dispatchHeaderClick:function(target,event){
+                var applyRipple=!(target.hasClass('active'));
+                this.element.find('.active').removeClass('active');
+                var expanded=this.element.find('.expand');
+                if(expanded[0] && !(expanded[0]===target[0])){
+                    this._hide(expanded);
+                }
+                target.addClass('active');
+                if(applyRipple){
+                    this._ripple(target,'active',300,event);
+                }
+            },
+
+            /**
+             * call the available jquery ripple method on an element
+             */
+            _ripple:function(element,type,delay,event){
+                var color=this._getRippleColor(type);
+                if(element !== undefined && !this._mq.touch){
+                    setTimeout(function(){
+                        element.ripple({event:event,rippleColor:color});
+                    },delay)
+                }
+            },
+
+            _getRippleColor:function(type){
+                return (type==='active') ? this.options.activeRippleColor : this.options.rippleColor;
+            },
+
+            _showByUrl: function(url){
+                var target=this.element.find('a[href="' + url + '"]');
+                if(target[0]){
+                    this._showByTarget(target);
+                }else{
+                    this._onEventTrigger('url.404',{url:url});
+                }
+            },
+
+            _showByTarget:function(target){
+                var header;
+                var parent=target.parents('menu-dropdown');
+                if(parent[0]){
+                    header=target.parents('menu-dropdown').prev('header');
+                    var collapsible=this._getCollapsibleFromTarget(header);
+                    this._onCollapse(collapsible,header,undefined);
+                    this._dispatchItemClick(target,undefined);
+                }else{
+                    header=target.parents('header');
+                    this._dispatchHeaderClick(header,undefined);
+                }
+            },
+
+            _hideByUrl: function(url){
+
+            },
+
+            _onDeviceClick:function(event){
+                console.log('device click');
+                var drawer=this._data.get('drawer');
+                if(drawer[0]){
+                    setTimeout(function(){
+                        drawer[0].closeDrawer();
+                    },2250);
+
+                }
+            },
+            /*==========================================
+             PUBLIC METHODS
+             *===========================================*/
+
+            /**
+             *
+             * @param {string} url
+             * @public
+             */
+            show: function (url) {
+                this._showByUrl(url);
+            },
+
+            /**
+             *
+             * @param {string} url
+             * @public
+             */
+            hide: function (url) {
+                this._hideByUrl(url);
+            }
+
+
+
+
+        });
+    });
+</script>

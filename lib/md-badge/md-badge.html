@@ -1,0 +1,17 @@
+<script>
+    Elliptical(function () {
+        $.component('md-badge', {
+            options:{
+               scopeBind:false
+            },
+
+            _initComponent: function () {
+                var value=this.element.attr('value');
+                if(value!==undefined){
+                    this.element.text(value);
+                }
+
+            }
+        });
+    });
+</script>
