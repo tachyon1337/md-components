@@ -19,7 +19,7 @@
                 $('body')[0].removeAttribute('preload');
                 setTimeout(function(){
                     template.remove();
-                    self._transitions(self.element,{opacity:0},function(){
+                    self._transition(self.element,{opacity:0},function(){
                         self.element.removeClass('animate');
                     });
                 },4000);
