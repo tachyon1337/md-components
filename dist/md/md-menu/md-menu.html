@@ -74,7 +74,7 @@
                     element = this._getCollapsible(element);
                 }
                 this._data.set('collapsible',element);
-                var isTouch = this._support.device.touch;
+                var isTouch = this._device.touch;
                 var animated = this.options.animate;
                 //this._showCollapseItemToggle(element);
                 (animated && !isTouch) ? this._expand() : this._open();
@@ -90,7 +90,7 @@
                     element = this._getCollapsible(element);
                 }
                 this._data.set('collapsible',element);
-                var isTouch = this._support.device.touch;
+                var isTouch = this._device.touch;
                 var animated = this.options.animate;
                 (animated && !isTouch) ? this._collapse() : this._close();
             },
