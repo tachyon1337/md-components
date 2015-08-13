@@ -89,7 +89,7 @@
                 if (!this._data.get('mousedown')) {
                     var thumb=this.element.find('.thumb');
                     if (thumb.hasClass('active')) {
-                        this._transitions(thumb,{height:0,width:0,top:'10px',marginLeft:'-6px',opacity:0,duration:100});
+                        this._transition(thumb,{height:0,width:0,top:'10px',marginLeft:'-6px',opacity:0,duration:100});
                     }
                     thumb.removeClass('active');
                 }
@@ -98,7 +98,7 @@
             _parseThumbTrack:function(event,thumb,input){
                 var left;
                 if (!thumb.hasClass('active')) {
-                    this._transitions(thumb,{ height: "30px", width: "30px", top: "0px", marginLeft: "-15px",opacity:1,duration:50});
+                    this._transition(thumb,{ height: "30px", width: "30px", top: "0px", marginLeft: "-15px",opacity:1,duration:50});
                 }
 
                 if(event.pageX === undefined || event.pageX === null){//mobile

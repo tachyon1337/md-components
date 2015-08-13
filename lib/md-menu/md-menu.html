@@ -133,7 +133,7 @@
                     opts.duration = duration;
                     opts.height = '0px';
                     opts.easing = easing;
-                    this._transitions(out, opts, function () {
+                    this._transition(out, opts, function () {
                         element.children(_itemSelector)
                                 .not(collapsible)
                                 .removeClass(_expandClass);
@@ -150,7 +150,7 @@
                 options.duration = duration;
                 options.height = height + 'px';
                 options.easing = easing;
-                this._transitions(flyout, options, function () {
+                this._transition(flyout, options, function () {
                     //raise show event
                     self._onEventTrigger('show', eventData);
                 });
@@ -181,7 +181,7 @@
                 options.duration = duration;
                 options.height = '0px';
                 options.easing = easing;
-                this._transitions(flyout, options, function () {
+                this._transition(flyout, options, function () {
                     collapsible.removeClass(_expandClass);
                     self._onEventTrigger('hide', eventData);
                 });
