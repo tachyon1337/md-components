@@ -41,9 +41,7 @@
             _isSorted:function(Service){
                 var self=this;
                 var service=new Service();
-                var Location=this.service('Location');
-                var url=Location.href;
-                var data=service.sorted(url);
+                var data=service.sorted();
                 if(data){
                     this._setGridState(data);
                 }else{
@@ -70,11 +68,10 @@
             },
 
             _onRefreshClick:function(event){
-                var Location=this.service('Location');
                 var url=this.options.refresh;
-                if(url !==undefined){
-                    Location.redirect(url);
-                }
+                var Service=this._data.get('Service');
+                var service=new Service();
+                service.refresh(url);
             },
 
             _parseColumn:function(target){
@@ -99,12 +96,10 @@
                 target[0].dataset.sort=sort;
             },
 
-            _setQuery:function(field,sortDirection){
+            _setQuery:function(field,sortOrder){
                 var Service=this._data.get('Service');
                 var service=new Service();
-                var Location=this.service('Location');
-                var url=Location.href;
-                service.sort(url,field,sortDirection);
+                service.sort({field:field,sortOrder:sortOrder});
             }
         });
     });
