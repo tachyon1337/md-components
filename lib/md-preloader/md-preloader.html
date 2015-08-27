@@ -2,7 +2,8 @@
     Elliptical(function () {
         $.element('md-preloader', {
             options:{
-                proxyUpgrade:true
+                proxyUpgrade:true,
+                duration:4000
             },
 
             _initElement: function () {
@@ -17,12 +18,13 @@
                 this.element.append(template);
                 this.element.addClass('animate');
                 $('body')[0].removeAttribute('preload');
+                var duration=this.options.duration;
                 setTimeout(function(){
                     template.remove();
                     self._transition(self.element,{opacity:0},function(){
                         self.element.removeClass('animate');
                     });
-                },4000);
+                },duration);
 
             }
         });

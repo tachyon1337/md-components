@@ -392,12 +392,15 @@
                 return (type==='active') ? this.options.activeRippleColor : this.options.rippleColor;
             },
 
-            _showByUrl: function(url){
+            _showByUrl: function(url,suppressError){
                 var target=this.element.find('a[href="' + url + '"]');
-                if(target[0]){
+                if(target[0] && !target.hasClass('active')){
                     this._showByTarget(target);
                 }else{
-                    this._onEventTrigger('url.404',{url:url});
+                    if(!suppressError){
+                        this._onEventTrigger('url.404',{url:url});
+                    }
+
                 }
             },
 
@@ -436,10 +439,11 @@
             /**
              *
              * @param {string} url
+             * @param {boolean} suppressError
              * @public
              */
-            show: function (url) {
-                this._showByUrl(url);
+            show: function (url,suppressError) {
+                this._showByUrl(url,suppressError);
             },
 
             /**

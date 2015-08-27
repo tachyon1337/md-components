@@ -6,6 +6,7 @@
 </md-checkbox>
 <script>
     Elliptical(function(){
+        $.element.registerElement('md-checkbox-list');
         $.element('md-checkbox',{
             _initElement:function(){
                 var checked=this.element.attr('checked');

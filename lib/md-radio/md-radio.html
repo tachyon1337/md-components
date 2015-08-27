@@ -1,11 +1,12 @@
 <md-radio parse-attr definition>
     <template>
-        <input type="radio" id="[[md-id]]" name="[[md-name]]" data-bind="[[bind]]" class="[[concentric]]" [[required]]>
+        <input type="radio" id="[[md-id]]" name="[[md-name]]" data-bind="[[bind]]" class="[[concentric]]" [[required]] value="[[value]]">
         <label for="[[md-id]]">[[label]]</label>
     </template>
 </md-radio>
 <script>
     Elliptical(function(){
+        $.element.registerElement('md-radio-list');
         $.element('md-radio',{
             _initElement:function(){
                 var checked=this.element.attr('checked');

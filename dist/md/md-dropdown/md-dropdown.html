@@ -10,9 +10,13 @@
         }
     }
     @keyframes md-scale-dropdown {
+
         0% {
-            transform: scale(.1);
+            transform: translate3d(0,0,0);
             opacity:0;
+        }
+        1%{
+            transform: scale(.1);
         }
         100% {
             transform: scale(1);
@@ -81,19 +85,19 @@
 
             _show:function(){
                 var element=this.element;
-                element.addClass('md-scale-dropdown')
+                element.removeClass('md-hide-dropdown')
+                        .addClass('md-scale-dropdown')
                         .timeout(200,function(){
                             element[0].focus();
                         });
             },
 
             _hide:function(){
-                var self=this;
-                this.element.addClass('md-hide-dropdown');
-                this.element.removeAnimation(200,function(){
-                    self.element.removeClass('md-scale-dropdown')
-                                .removeClass('md-hide-dropdown');
-                });
+                var element=this.element;
+                element.addClass('md-hide-dropdown')
+                        .timeout(200,function(){
+                            element.removeClass('md-scale-dropdown');
+                        });
             },
 
             show:function(){
