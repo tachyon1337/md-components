@@ -238,6 +238,17 @@
                 }
             },
 
+            value: function () {
+                var input;
+                if (this._device.touch) {
+                    input = this.element.find('[touch-input]');
+                    return input.val();
+                } else {
+                    input = this.element.find('[desktop-input]');
+                    return input.val();
+                }
+            },
+
             getDate:function(){
                 if(this._device.touch){
                     var input=this.element.find('[touch-input]');

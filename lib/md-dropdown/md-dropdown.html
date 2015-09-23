@@ -63,6 +63,13 @@
         -webkit-animation-duration:200ms;
         animation-duration: 200ms;
     }
+    md-dropdown.flex{
+        display:-webkit-flex;
+        -webkit-flex-direction: column;
+        display:flex;
+        flex-direction:column;
+    }
+  
 </style>
 <md-dropdown definition>
     <template>
@@ -73,27 +80,35 @@
     Elliptical(function () {
         $.element('md-dropdown', {
             _initElement: function () {
+                this._data.set('open', false);
                 if(this.element.attr('tabIndex')===undefined){
                     this.element.attr('tabIndex',1);
                 }
             },
 
-            _events:function(){
-                this._event(this.element,'blur',this._hide.bind(this));
+            _show: function () {
 
-            },
-
-            _show:function(){
-                var element=this.element;
+                if (this._data.get('open')) {
+                    return;
+                } else {
+                    this._data.set('open', true);
+                }
+                var element = this.element;
                 element.removeClass('md-hide-dropdown')
                         .addClass('md-scale-dropdown')
                         .timeout(200,function(){
                             element[0].focus();
+
                         });
             },
 
-            _hide:function(){
-                var element=this.element;
+            _hide: function () {
+                if (!this._data.get('open')) {
+                    return;
+                } else {
+                    this._data.set('open', false);
+                }
+                var element = this.element;
                 element.addClass('md-hide-dropdown')
                         .timeout(200,function(){
                             element.removeClass('md-scale-dropdown');
@@ -105,14 +120,28 @@
             },
 
             hide:function(){
-                this._hide();
+                var self = this;
+                setTimeout(function () {
+                    self._hide();
+                },200);
+            }
+        });
+        var deviceClick = ('ontouchend' in document) ? 'touchstart.md' : 'click.md';
+        $(document).on(deviceClick, '[dropdown]', function (event) {
+            var target = $(event.currentTarget);
+            var dropdown = target.find('md-dropdown');
+            if (!dropdown.hasClass('open')) {
+                dropdown.addClass('open');
+                dropdown.mdDropdown('show');
+            } else {
+                dropdown.removeClass('open');
+                dropdown.mdDropdown('hide');
             }
         });
 
-        $(document).on('touchclick','[dropdown]',function(event){
-            var target=$(event.currentTarget);
-            var dropdown=target.find('md-dropdown');
-            dropdown.mdDropdown('show');
+        $(document).on('blur.md','md-dropdown', function (event) {
+            var target = $(event.currentTarget);
+            target.mdDropdown('hide');
         });
 
     });
